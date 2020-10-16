@@ -10,14 +10,13 @@ const fetch = require('fetch-cookie')(nodeFech , cookieJar );
 const cheerio = require('cheerio');
 const myConf = require('./config');
 const _ = require('lodash');
-const fs = require('fs');
 const xlsx = require('excel4node');
 
 
 let pttPostUrls = [];
 let users= [];
 let articles = [];
-let lastPage = 0;
+let lastPage = myConf.lastPage || 0;
 async function getLastPage (category) {
     let option = {
         "url" : `https://www.ptt.cc/bbs/${category}/index.html`
@@ -54,6 +53,7 @@ async function fetchPttPostUrl(category ,page = "") {
             }
         }
     }
+    console.log(`抓取${category}看板:第${page ? page : "最新"}頁`);
 } 
 async function fetchPttArticle (pageUrl) {
     let url = `${pttUrl}${pageUrl}`;
@@ -61,8 +61,8 @@ async function fetchPttArticle (pageUrl) {
     let resText = await res.text();
     let $ = cheerio.load(resText);
     let author =$('.article-metaline .article-meta-value');
-    let authorName = _.get(author[0] , 'childNodes[0].data');
-    let articleTitle = _.get(author[1] , 'childNodes[0].data');
+    let authorName = _.get(author[0] , 'childNodes[0].data')|| "noUser";
+    let articleTitle = _.get(author[1] , 'childNodes[0].data') || "noContent";
     //去除 作者名稱的括號以及空白
     authorName = authorName.replace(/ \((.*?)\)/, "");
     let mainContent = $("#main-content");
@@ -96,17 +96,25 @@ async function main () {
         let item = myConf[j];
         let category = item.category;
         console.log(`開始抓取 ${category} 看板`);
-        await getLastPage(category);
-        await fetchPttPostUrl(category , "");
-        for (let i = 1 ;i < item.pages ; i++) {
+        if  (!item.lastPage) {
+            await getLastPage(category);
+            await fetchPttPostUrl(category , "");
+        } else {
+            lastPage = item.lastPage;
+        }
+        
+        for (let i = 0 ;i < item.pages ; i++) {
             await fetchPttPostUrl(category , lastPage-i);
         }
+        console.log("各文章網址:");
+        console.log(pttPostUrls);
+        let docCount = pttPostUrls.length;
+        let fetchCount = 1;
         for (url of pttPostUrls) {
             await fetchPttArticle(url);
+            console.log(`爬取: ${fetchCount++} / ${docCount}`);
         }
         try {
-            console.log("各文章網址:");
-            console.log(pttPostUrls);
             generateXlsx(category ,articles);
             console.log(`已儲存${category}.xlsx`);
         } catch (e) {

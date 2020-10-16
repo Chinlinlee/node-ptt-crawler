@@ -15,7 +15,8 @@ npm install
 module.exports = [
     {
         category : "prozac" , //看板名稱
-        pages : 3 //要從最新開始抓3頁
+        pages : 3 //要從最新開始抓3頁 , 
+        lastPage : 1234 //從1234頁開始抓${pages}頁，設為0時從最新開始抓取${pages}頁
     } 
 ]
 ```
