@@ -1,0 +1,20 @@
+{
+  "name": "ptt-crawler",
+  "version": "0.0.0",
+  "private": true,
+  "author": {
+    "name": "Chinlin Lee"
+  },
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "excel4node": "^1.7.2",
+    "fetch-cookie": "^0.10.1",
+    "json2csv": "^5.0.3",
+    "lodash": "^4.17.20",
+    "node-fetch": "^2.6.1",
+    "tough-cookie": "^4.0.0"
+  }
+}
